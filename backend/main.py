@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import os
 from pathlib import Path
@@ -106,10 +107,29 @@ async def _setup_bot(url: str) -> None:
     print(f"[webhook] Бот подключён вебхуком: {url}/telegram/webhook", flush=True)
 
 
+async def _photos_job() -> None:
+    try:
+        from .photos import fill_missing
+        await fill_missing()
+    except Exception as exc:  # noqa: BLE001
+        print(f"[photos] {exc}", flush=True)
+
+
+@app.get("/api/ai-status")
+async def ai_status() -> dict:
+    """Проверка ИИ: настроен ли ключ и отвечает ли провайдер."""
+    if not config.ai_enabled:
+        return {"enabled": False, "ok": False, "model": None}
+    out = await ai_service._call_llm(
+        [{"role": "user", "content": "Ответь одним словом: ок"}], max_tokens=5)
+    return {"enabled": True, "ok": out is not None, "model": config.ai_model}
+
+
 @app.on_event("startup")
 async def on_startup() -> None:
     """При старте создаём схему БД, наполняем её и (на хостинге) включаем бота."""
     await seed()
+    asyncio.create_task(_photos_job())
     url = _public_url()
     if url.startswith("https://") and config.bot_token:
         try:

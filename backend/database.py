@@ -33,7 +33,18 @@ CREATE TABLE IF NOT EXISTS hotels (
     amenities   TEXT    NOT NULL,   -- JSON-массив строк
     near_sea    INTEGER NOT NULL,   -- 0/1, в SQLite нет типа BOOLEAN
     description TEXT    NOT NULL,
-    image       TEXT    NOT NULL
+    image       TEXT    NOT NULL,
+    name_en     TEXT    NOT NULL DEFAULT '',
+    wiki_title  TEXT,
+    photo       TEXT    NOT NULL DEFAULT '',
+    photo_credit TEXT   NOT NULL DEFAULT '',
+    source_url  TEXT    NOT NULL DEFAULT '',
+    photo_tried INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS favorites (
@@ -91,6 +102,10 @@ def _row_to_hotel(row: aiosqlite.Row) -> Hotel:
         near_sea=bool(row["near_sea"]),
         description=row["description"],
         image=row["image"],
+        name_en=row["name_en"],
+        photo=row["photo"],
+        photo_credit=row["photo_credit"],
+        source_url=row["source_url"],
     )
 
 

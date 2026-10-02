@@ -124,7 +124,27 @@ function renderHotels(container, hotels) {
     const card = node.querySelector(".hotel");
     card.style.animationDelay = `${idx * 45}ms`;
 
-    node.querySelector(".hotel__media").textContent = h.image;
+    const media = node.querySelector(".hotel__media");
+    media.textContent = h.image;
+    if (h.photo) {
+      const img = new Image();
+      img.alt = h.name;
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.onload = () => { media.textContent = ""; media.classList.add("hotel__media--photo"); media.appendChild(img); };
+      img.src = h.photo;
+    }
+    const links = document.createElement("div");
+    links.className = "hotel__links";
+    const map = document.createElement("a");
+    map.href = h.map_url; map.target = "_blank"; map.rel = "noopener"; map.textContent = "🗺 На карте";
+    links.appendChild(map);
+    if (h.source_url) {
+      const src = document.createElement("a");
+      src.href = h.source_url; src.target = "_blank"; src.rel = "noopener"; src.textContent = "📷 Источник фото";
+      links.appendChild(src);
+    }
+    node.querySelector(".hotel__desc").after(links);
     node.querySelector(".hotel__name").textContent = h.name;
     node.querySelector(".hotel__stars").textContent = "★".repeat(h.stars);
     node.querySelector(".hotel__city").textContent =

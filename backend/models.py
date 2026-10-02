@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from typing import Optional
+from urllib.parse import quote
 
 
 @dataclass
@@ -98,7 +99,11 @@ class Hotel:
     amenities: list[str]  # Список удобств
     near_sea: bool        # Расположен ли у моря
     description: str      # Краткое описание
-    image: str            # Эмодзи-иллюстрация для карточки
+    image: str            # Эмодзи-иллюстрация (запасной вариант)
+    name_en: str = ""
+    photo: str = ""         # URL реального фото (Википедия / Commons)
+    photo_credit: str = ""  # Подпись источника фото
+    source_url: str = ""    # Страница-источник фото
 
     def to_dict(self) -> dict:
         return {
@@ -113,4 +118,9 @@ class Hotel:
             "near_sea": self.near_sea,
             "description": self.description,
             "image": self.image,
+            "photo": self.photo,
+            "photo_credit": self.photo_credit,
+            "source_url": self.source_url,
+            "map_url": "https://yandex.ru/maps/?text="
+            + quote(f"{self.name} {self.city}"),
         }

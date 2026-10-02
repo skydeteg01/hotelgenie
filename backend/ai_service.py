@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import json
+import asyncio
 import re
 from typing import Optional
 
@@ -44,7 +45,7 @@ PARSE_SYSTEM_PROMPT = """Ты — парсер запросов для сист�
   "near_sea": true/false/null     // нужен ли отель у моря
 }
 Если параметр не упомянут — ставь null (для amenities — пустой список).
-Нормализуй город к именительному падежу (Сочи, Москва, Санкт-Петербург)."""
+Нормализуй город к именительному падежу. Доступные города: Москва, Санкт-Петербург, Сочи, Казань, Калининград, Иркутск, Ялта."""
 
 
 # --- Словари для резервного разбора ------------------------------------
@@ -175,7 +176,12 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
     }
     try:
         async with httpx.AsyncClient(timeout=20) as client:
-            resp = await client.post(url, json=payload, headers=headers)
+            for attempt in range(3):
+                resp = await client.post(url, json=payload, headers=headers)
+                if resp.status_code == 429 and attempt < 2:
+                    await asyncio.sleep(1.5 * (attempt + 1))
+                    continue
+                break
             resp.raise_for_status()
             data = resp.json()
             return data["choices"][0]["message"]["content"]
