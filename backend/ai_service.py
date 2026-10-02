@@ -175,7 +175,7 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
     payload = {
         "model": config.ai_model,
         "messages": messages,
-        "max_tokens": max_tokens,
+        "max_tokens": max(max_tokens, 800),
         "temperature": 0.3,
     }
     try:
@@ -190,7 +190,11 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
                 last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
             resp.raise_for_status()
             data = resp.json()
-            return data["choices"][0]["message"]["content"]
+            content = data["choices"][0]["message"].get("content")
+            if not content or not content.strip():
+                last_error = "empty content: " + str(data)[:300]
+                return None
+            return content
     except Exception as exc:  # noqa: BLE001 — логируем и переходим к fallback
         last_error = last_error or repr(exc)
         print(f"[ai_service] Ошибка обращения к ИИ: {exc} {last_error}")
