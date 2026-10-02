@@ -122,7 +122,8 @@ async def ai_status() -> dict:
         return {"enabled": False, "ok": False, "model": None}
     out = await ai_service._call_llm(
         [{"role": "user", "content": "Ответь одним словом: ок"}], max_tokens=5)
-    return {"enabled": True, "ok": out is not None, "model": config.ai_model}
+    return {"enabled": True, "ok": out is not None, "model": config.ai_model,
+            "error": None if out is not None else ai_service.last_error}
 
 
 @app.on_event("startup")
