@@ -166,6 +166,7 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
     Низкоуровневый вызов OpenAI-совместимого Chat Completions API.
     Возвращает текст ответа модели или None при любой ошибке.
     """
+    global last_error
     if not config.ai_enabled:
         return None
 
@@ -186,13 +187,11 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
                     continue
                 break
             if resp.status_code >= 400:
-                global last_error
                 last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
             resp.raise_for_status()
             data = resp.json()
             return data["choices"][0]["message"]["content"]
     except Exception as exc:  # noqa: BLE001 — логируем и переходим к fallback
-        global last_error
         last_error = last_error or str(exc)
         print(f"[ai_service] Ошибка обращения к ИИ: {exc} {last_error}")
         return None
