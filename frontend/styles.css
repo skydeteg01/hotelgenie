@@ -1,0 +1,413 @@
+/* =======================================================================
+   HotelGenie — стили Telegram Mini App
+   Эстетика: тёплое побережье. Глубокий бирюзовый + песочно-терракотовые
+   акценты, акцидентный шрифт Fraunces для заголовков, чистый Manrope
+   для текста. Палитра адаптируется к теме Telegram через CSS-переменные
+   --tg-theme-*, но сохраняет фирменный акцент.
+   ===================================================================== */
+
+:root {
+  /* Значения по умолчанию (если приложение открыто вне Telegram). */
+  --tg-theme-bg-color: #f5f1ea;
+  --tg-theme-text-color: #1d2b2a;
+  --tg-theme-hint-color: #7d8a89;
+  --tg-theme-secondary-bg-color: #ffffff;
+
+  /* Фирменная палитра. */
+  --teal: #0f6e6a;
+  --teal-deep: #0a4f4c;
+  --sand: #e9dfce;
+  --terra: #d97a4f;
+  --terra-soft: #f3d9c9;
+  --gold: #c79a3a;
+
+  --bg: var(--tg-theme-bg-color);
+  --surface: var(--tg-theme-secondary-bg-color);
+  --text: var(--tg-theme-text-color);
+  --hint: var(--tg-theme-hint-color);
+
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 10px 30px rgba(15, 110, 106, 0.10);
+  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body {
+  padding-bottom: 84px;          /* место под нижнюю навигацию */
+  min-height: 100vh;
+  background-image:
+    radial-gradient(120% 60% at 100% 0%, rgba(217, 122, 79, 0.10), transparent 60%),
+    radial-gradient(80% 50% at 0% 0%, rgba(15, 110, 106, 0.10), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* --- Шапка ------------------------------------------------------------ */
+.appbar {
+  padding: 22px 20px 14px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand__mark {
+  font-size: 26px;
+  color: var(--teal);
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 2px 4px rgba(15, 110, 106, 0.3));
+}
+.brand__name {
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+  color: var(--teal-deep);
+}
+.appbar__tagline {
+  margin-top: 4px;
+  color: var(--hint);
+  font-size: 13.5px;
+}
+
+/* --- Экран и вкладки -------------------------------------------------- */
+.screen { padding: 0 16px; }
+.tab__title {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  margin: 6px 4px 14px;
+  color: var(--teal-deep);
+}
+
+/* --- Поле поиска ------------------------------------------------------ */
+.search {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(15, 110, 106, 0.08);
+}
+.search__input {
+  width: 100%;
+  border: none;
+  resize: none;
+  font: inherit;
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+}
+.search__input::placeholder { color: var(--hint); }
+.search__btn {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 16px rgba(15, 110, 106, 0.28);
+}
+.search__btn:active { transform: scale(0.98); }
+.search__btn-icon { font-size: 17px; color: var(--gold); }
+
+/* --- Подсказки и история (чипсы) -------------------------------------- */
+.suggestions, .history { margin: 14px 2px 0; }
+.suggestions__label, .history__label {
+  display: block;
+  color: var(--hint);
+  font-size: 12.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.history__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.2s ease;
+  margin: 0 6px 8px 0;
+}
+.chip:active { transform: scale(0.96); }
+.chip--ghost {
+  background: var(--terra-soft);
+  color: #9a4a26;
+}
+.chip--history {
+  background: rgba(15, 110, 106, 0.10);
+  color: var(--teal-deep);
+}
+
+/* --- Переключатель и панель фильтров ---------------------------------- */
+.filters-toggle {
+  margin: 16px 0 0;
+  background: none;
+  border: 1px dashed rgba(15, 110, 106, 0.35);
+  color: var(--teal);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+}
+.filters {
+  margin-top: 12px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  animation: slidein 0.25s ease;
+}
+@keyframes slidein {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.field { display: block; margin-bottom: 16px; }
+.field--row { display: flex; align-items: center; gap: 10px; }
+.field__label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 7px; }
+.field__control {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--bg);
+  color: var(--text);
+}
+.field__range { width: 100%; accent-color: var(--teal); }
+.stars-picker { display: flex; gap: 8px; }
+.stars-picker button {
+  flex: 1;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 9px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(15, 110, 106, 0.2);
+  background: var(--bg);
+  color: var(--teal-deep);
+  cursor: pointer;
+}
+.stars-picker button.active {
+  background: var(--teal);
+  color: #fff;
+  border-color: var(--teal);
+}
+.filters__apply {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font: inherit;
+  font-weight: 700;
+  color: #fff;
+  background: var(--terra);
+  cursor: pointer;
+}
+
+/* --- Карточка рекомендации ИИ ----------------------------------------- */
+.ai-card {
+  margin-top: 20px;
+  background: linear-gradient(135deg, rgba(15,110,106,0.07), rgba(217,122,79,0.07));
+  border: 1px solid rgba(15, 110, 106, 0.15);
+  border-radius: var(--radius);
+  padding: 16px;
+  animation: slidein 0.3s ease;
+}
+.ai-card__badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal);
+  background: rgba(15, 110, 106, 0.12);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.ai-card__badge.fallback { color: #9a4a26; background: var(--terra-soft); }
+.ai-card__text {
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.ai-card__criteria { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.crit-chip {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--teal-deep);
+}
+
+/* --- Результаты и карточки отелей ------------------------------------- */
+.results { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+.hotel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  animation: pop 0.3s ease backwards;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hotel__media {
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46px;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(217,122,79,0.18), transparent 60%),
+    linear-gradient(135deg, var(--sand), #d7e7e3);
+}
+.hotel__body { padding: 14px 16px 16px; }
+.hotel__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.hotel__name {
+  font-family: "Fraunces", serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--teal-deep);
+}
+.hotel__fav {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--terra);
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+.hotel__fav:active { transform: scale(1.25); }
+.hotel__fav.active { color: #e23b5a; }
+.hotel__meta { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.hotel__stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
+.hotel__city { color: var(--hint); font-size: 13px; }
+.hotel__desc { margin-top: 8px; font-size: 13.5px; line-height: 1.45; color: var(--text); opacity: 0.85; }
+.hotel__amenities { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.amenity {
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(15, 110, 106, 0.08);
+  color: var(--teal-deep);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+.hotel__bottom {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hotel__price { font-weight: 700; font-size: 17px; color: var(--teal-deep); }
+.hotel__price small { font-weight: 500; color: var(--hint); font-size: 12px; }
+.hotel__rating {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--teal);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* --- Пустые состояния и ошибки ---------------------------------------- */
+.empty {
+  text-align: center;
+  color: var(--hint);
+  padding: 40px 20px;
+  font-size: 14.5px;
+}
+.empty__emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+
+/* --- Индикатор загрузки ----------------------------------------------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(245, 241, 234, 0.86);
+  backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.loader__orbit {
+  width: 56px;
+  height: 56px;
+  border: 3px solid rgba(15, 110, 106, 0.18);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  position: relative;
+}
+.loader__orbit span {
+  position: absolute;
+  top: -7px; left: 50%;
+  width: 8px; height: 8px;
+  margin-left: -4px;
+  background: var(--terra);
+  border-radius: 50%;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader__text { margin-top: 16px; color: var(--teal-deep); font-weight: 600; font-size: 14px; }
+
+/* --- Нижняя навигация ------------------------------------------------- */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  z-index: 40;
+}
+.tabbar__btn {
+  flex: 1;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--hint);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.tabbar__btn.active { color: var(--teal); }
+.tabbar__icon { font-size: 19px; }
+
+[hidden] { display: none !important; }

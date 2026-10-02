@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HotelGenie — умный подбор отелей</title>
+
+  <!-- SDK Telegram Mini Apps: тема, кнопки, тактильная отдача, initData -->
+  <script src="telegram-web-app.js"></script>
+  <script>
+    // Если что-то сломалось — показываем ошибку на экране, а не белый экран.
+    window.addEventListener("error", function (e) {
+      var box = document.getElementById("crash");
+      if (box) { box.hidden = false; box.textContent = "Ошибка: " + (e.message || e); }
+    });
+  </script>
+
+  <!-- Характерная типографика: акцидентный Fraunces + чистый Manrope -->
+  <!-- Шрифты подгружаются НЕ блокируя отрисовку: если Google Fonts
+       недоступен (например, без VPN), страница всё равно откроется
+       системным шрифтом. -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="crash" hidden style="position:fixed;top:0;left:0;right:0;z-index:9999;padding:10px 14px;background:#b00020;color:#fff;font:14px/1.3 system-ui,sans-serif"></div>
+  <!-- Шапка -->
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand__mark">◐</span>
+      <span class="brand__name">HotelGenie</span>
+    </div>
+    <p class="appbar__tagline">Опишите отель мечты — остальное сделает ИИ</p>
+  </header>
+
+  <main class="screen" id="screen">
+
+    <!-- ВКЛАДКА: ПОИСК -->
+    <section class="tab" id="tab-search">
+      <!-- Поле умного поиска -->
+      <div class="search">
+        <textarea
+          id="query"
+          class="search__input"
+          rows="2"
+          placeholder="Например: отель в Сочи у моря на двоих до 6000 ₽ с бассейном и завтраком"></textarea>
+        <button id="search-btn" class="search__btn">
+          <span class="search__btn-text">Найти с ИИ</span>
+          <span class="search__btn-icon">✦</span>
+        </button>
+      </div>
+
+      <!-- Быстрые подсказки -->
+      <div class="suggestions" id="suggestions">
+        <span class="suggestions__label">Попробуйте:</span>
+        <button class="chip chip--ghost">5-звёздочный отель в Москве</button>
+        <button class="chip chip--ghost">недорого у моря в Ялте</button>
+        <button class="chip chip--ghost">спа-отель на Байкале для двоих</button>
+      </div>
+
+      <!-- История запросов -->
+      <div class="history" id="history" hidden>
+        <span class="history__label">Недавние запросы</span>
+        <div class="history__chips" id="history-chips"></div>
+      </div>
+
+      <!-- Кнопка ручных фильтров -->
+      <button class="filters-toggle" id="filters-toggle">
+        ⚙ Точные фильтры
+      </button>
+
+      <!-- Панель ручных фильтров -->
+      <div class="filters" id="filters" hidden>
+        <label class="field">
+          <span class="field__label">Город</span>
+          <select id="f-city" class="field__control">
+            <option value="">любой</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Цена до, ₽: <b id="f-price-val">15000</b></span>
+          <input id="f-price" class="field__range" type="range" min="1500" max="15000" step="500" value="15000" />
+        </label>
+        <label class="field">
+          <span class="field__label">Минимум звёзд</span>
+          <div class="stars-picker" id="f-stars">
+            <button data-v="0" class="active">любой</button>
+            <button data-v="3">3★</button>
+            <button data-v="4">4★</button>
+            <button data-v="5">5★</button>
+          </div>
+        </label>
+        <label class="field field--row">
+          <input id="f-sea" type="checkbox" />
+          <span class="field__label">Только у моря 🌊</span>
+        </label>
+        <button class="filters__apply" id="filters-apply">Применить фильтры</button>
+      </div>
+
+      <!-- Рекомендация ИИ -->
+      <div class="ai-card" id="ai-card" hidden>
+        <div class="ai-card__head">
+          <span class="ai-card__badge" id="ai-badge">✦ Рекомендация ИИ</span>
+        </div>
+        <p class="ai-card__text" id="ai-text"></p>
+        <div class="ai-card__criteria" id="ai-criteria"></div>
+      </div>
+
+      <!-- Результаты -->
+      <div class="results" id="results"></div>
+    </section>
+
+    <!-- ВКЛАДКА: ИЗБРАННОЕ -->
+    <section class="tab" id="tab-fav" hidden>
+      <h2 class="tab__title">Избранное</h2>
+      <div class="results" id="fav-results"></div>
+    </section>
+
+  </main>
+
+  <!-- Индикатор загрузки -->
+  <div class="loader" id="loader" hidden>
+    <div class="loader__orbit"><span></span></div>
+    <p class="loader__text" id="loader-text">ИИ изучает ваш запрос…</p>
+  </div>
+
+  <!-- Нижняя навигация -->
+  <nav class="tabbar">
+    <button class="tabbar__btn active" data-tab="search">
+      <span class="tabbar__icon">🔍</span>
+      <span>Поиск</span>
+    </button>
+    <button class="tabbar__btn" data-tab="fav">
+      <span class="tabbar__icon">❤</span>
+      <span>Избранное</span>
+    </button>
+  </nav>
+
+  <!-- Шаблон карточки отеля -->
+  <template id="hotel-template">
+    <article class="hotel">
+      <div class="hotel__media"></div>
+      <div class="hotel__body">
+        <div class="hotel__top">
+          <h3 class="hotel__name"></h3>
+          <button class="hotel__fav" aria-label="В избранное">♡</button>
+        </div>
+        <div class="hotel__meta">
+          <span class="hotel__stars"></span>
+          <span class="hotel__city"></span>
+        </div>
+        <p class="hotel__desc"></p>
+        <div class="hotel__amenities"></div>
+        <div class="hotel__bottom">
+          <span class="hotel__price"></span>
+          <span class="hotel__rating"></span>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

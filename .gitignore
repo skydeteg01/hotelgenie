@@ -1,0 +1,21 @@
+# Окружение и секреты
+venv/
+.venv/
+.env
+
+# Локальная база (содержит реальные Telegram-ID пользователей)
+*.db
+
+# Python
+__pycache__/
+*.pyc
+
+# ОС / IDE
+.DS_Store
+.idea/*
+!.idea/runConfigurations/
+!.idea/hotelgenie.iml
+!.idea/modules.xml
+
+# Служебное
+.tunnel_url
