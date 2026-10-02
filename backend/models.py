@@ -118,7 +118,7 @@ class Hotel:
             "near_sea": self.near_sea,
             "description": self.description,
             "image": self.image,
-            "photo": self.photo,
+            "photo": ("/api/photo?u=" + quote(self.photo, safe="")) if self.photo else "",
             "photo_credit": self.photo_credit,
             "source_url": self.source_url,
             "map_url": "https://yandex.ru/maps/?text="

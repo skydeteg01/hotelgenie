@@ -43,8 +43,35 @@ app.add_middleware(
 async def no_cache(request, call_next):
     """Отключаем кэш: после обновления фронтенда Telegram берёт свежие файлы."""
     response = await call_next(request)
-    response.headers["Cache-Control"] = "no-store"
+    if not request.url.path.startswith("/api/photo"):
+        response.headers["Cache-Control"] = "no-store"
     return response
+
+
+_photo_cache: dict[str, tuple[bytes, str]] = {}
+
+
+@app.get("/api/photo")
+async def photo_proxy(u: str):
+    """Отдаёт фото отеля через наш сервер (Википедия может быть недоступна клиенту)."""
+    from urllib.parse import urlparse
+    import httpx
+    from fastapi import Response
+
+    host = urlparse(u).hostname or ""
+    if urlparse(u).scheme != "https" or host not in (
+            "upload.wikimedia.org", "thumb.wikimedia.org"):
+        raise HTTPException(400, "bad url")
+    if u not in _photo_cache:
+        async with httpx.AsyncClient(timeout=20, follow_redirects=True, headers={
+                "User-Agent": "HotelGenieBot/1.0 (educational Telegram Mini App)"}) as c:
+            r = await c.get(u)
+        if r.status_code != 200 or not r.headers.get("content-type", "").startswith("image/"):
+            raise HTTPException(404, "photo unavailable")
+        _photo_cache[u] = (r.content, r.headers["content-type"])
+    body, ctype = _photo_cache[u]
+    return Response(body, media_type=ctype,
+                    headers={"Cache-Control": "public, max-age=86400"})
 
 
 # --- Схемы запросов/ответов (Pydantic) ---------------------------------
