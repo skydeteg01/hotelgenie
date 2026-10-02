@@ -129,7 +129,6 @@ function renderHotels(container, hotels) {
     if (h.photo) {
       const img = new Image();
       img.alt = h.name;
-      img.loading = "lazy";
       img.referrerPolicy = "no-referrer";
       img.onload = () => { media.textContent = ""; media.classList.add("hotel__media--photo"); media.appendChild(img); };
       img.src = h.photo;
