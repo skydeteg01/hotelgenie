@@ -179,7 +179,7 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
         "temperature": 0.3,
     }
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
+        async with httpx.AsyncClient(timeout=45) as client:
             for attempt in range(3):
                 resp = await client.post(url, json=payload, headers=headers)
                 if resp.status_code == 429 and attempt < 2:
@@ -192,7 +192,7 @@ async def _call_llm(messages: list[dict], max_tokens: int = 400) -> Optional[str
             data = resp.json()
             return data["choices"][0]["message"]["content"]
     except Exception as exc:  # noqa: BLE001 — логируем и переходим к fallback
-        last_error = last_error or str(exc)
+        last_error = last_error or repr(exc)
         print(f"[ai_service] Ошибка обращения к ИИ: {exc} {last_error}")
         return None
 
