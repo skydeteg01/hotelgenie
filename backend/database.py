@@ -181,6 +181,79 @@ async def search_hotels(
     return hotels[:limit]
 
 
+def _mismatches(h: Hotel, c: SearchCriteria) -> list[str]:
+    """Чем отель не дотягивает до исходного запроса."""
+    out: list[str] = []
+    if c.city and c.city.lower() not in h.city.lower():
+        out.append(f"другой город ({h.city})")
+    if c.max_price and h.price > c.max_price:
+        out.append(f"дороже бюджета на {h.price - c.max_price} ₽")
+    if c.min_price and h.price < c.min_price:
+        out.append("дешевле заданного минимума")
+    if c.min_stars and h.stars < c.min_stars:
+        out.append(f"{h.stars}★ вместо {c.min_stars}★")
+    if c.min_rating and h.rating < c.min_rating:
+        out.append(f"рейтинг {h.rating}")
+    if c.near_sea and not h.near_sea:
+        out.append("не у моря")
+    if c.guests and h.capacity < c.guests:
+        out.append(f"номер на {h.capacity} чел.")
+    if c.amenities:
+        have = {a.lower() for a in h.amenities}
+        miss = [a for a in c.amenities if a.lower() not in have]
+        if miss:
+            out.append("нет: " + ", ".join(miss))
+    return out
+
+
+async def search_smart(
+    criteria: SearchCriteria, want: int = 6, limit: int = 12
+) -> tuple[list[Hotel], int]:
+    """
+    Мягкий поиск: сначала точные совпадения, затем, если их мало,
+    постепенно ослабляем условия (удобства, бюджет +30%, звёзды/рейтинг,
+    близость к морю, город) и добавляем близкие варианты с пометкой.
+    Возвращает (отели, число_точных).
+    """
+    from dataclasses import replace
+
+    exact = await search_hotels(criteria, limit=limit)
+    if len(exact) >= want:
+        return exact, len(exact)
+
+    seen = {h.id for h in exact}
+    extra: list[Hotel] = []
+    c = replace(criteria, amenities=list(criteria.amenities))
+
+    steps = [
+        lambda x: setattr(x, "amenities", []),
+        lambda x: setattr(x, "max_price", int(x.max_price * 1.3)) if x.max_price else None,
+        lambda x: setattr(x, "max_price", int(x.max_price * 1.6)) if x.max_price else None,
+        lambda x: (setattr(x, "min_stars", max(1, x.min_stars - 1)) if x.min_stars else None,
+                   setattr(x, "min_rating", None)),
+        lambda x: setattr(x, "near_sea", None),
+        lambda x: setattr(x, "guests", None),
+        lambda x: setattr(x, "city", None),
+        lambda x: setattr(x, "max_price", int(x.max_price * 1.6)) if x.max_price else None,
+    ]
+    for step in steps:
+        step(c)
+        for h in await search_hotels(c, limit=50):
+            if h.id not in seen:
+                seen.add(h.id)
+                miss = _mismatches(h, criteria)
+                h.note = "; ".join(miss)
+                extra.append(h)
+        if len(exact) + len(extra) >= want * 2:
+            break
+
+    def penalty(h: Hotel) -> int:
+        return (h.note.count(";") + 1) + (3 if "другой город" in h.note else 0)
+
+    extra.sort(key=lambda h: (penalty(h), -h.rating))
+    return (exact + extra)[:limit], len(exact)
+
+
 async def get_hotel(hotel_id: int) -> Optional[Hotel]:
     """Возвращает один отель по идентификатору."""
     async with aiosqlite.connect(config.db_path) as db:

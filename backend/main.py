@@ -211,10 +211,21 @@ async def smart_search(req: SearchRequest) -> dict:
         raise HTTPException(status_code=400, detail="Пустой запрос")
 
     criteria, used_ai = await ai_service.parse_query(query)
-    hotels = await database.search_hotels(criteria)
+    hotels, exact_n = await database.search_smart(criteria)
     recommendation = await ai_service.generate_recommendation(
         query, criteria, hotels
     )
+    cities = await database.list_cities()
+    if criteria.city and not any(
+            criteria.city.lower() in c.lower() for c in cities):
+        recommendation = (f"В базе пока нет отелей в городе «{criteria.city}». "
+                          "Показываю близкие по условиям варианты в других городах. "
+                          + recommendation)
+    elif hotels and exact_n < len(hotels):
+        pre = (f"Точных совпадений: {exact_n}. " if exact_n else
+               "Точных совпадений нет. ") + \
+              "Остальные — самые близкие варианты, у каждого указано, чем он отличается. "
+        recommendation = pre + recommendation
     await database.add_history(user_id, query)
     fav_ids = await database.get_favorite_ids(user_id)
 
@@ -224,6 +235,7 @@ async def smart_search(req: SearchRequest) -> dict:
         "used_ai": used_ai,
         "recommendation": recommendation,
         "hotels": [h.to_dict() for h in hotels],
+        "exact_count": exact_n,
         "favorite_ids": list(fav_ids),
     }
 

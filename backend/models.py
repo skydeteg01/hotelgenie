@@ -104,6 +104,7 @@ class Hotel:
     photo: str = ""         # URL реального фото (Википедия / Commons)
     photo_credit: str = ""  # Подпись источника фото
     source_url: str = ""    # Страница-источник фото
+    note: str = ""          # Чем отель отличается от запроса (мягкий поиск)
 
     def to_dict(self) -> dict:
         return {
@@ -121,6 +122,7 @@ class Hotel:
             "photo": ("/api/photo?u=" + quote(self.photo, safe="")) if self.photo else "",
             "photo_credit": self.photo_credit,
             "source_url": self.source_url,
+            "note": self.note,
             "map_url": "https://yandex.ru/maps/?text="
             + quote(f"{self.name} {self.city}"),
         }

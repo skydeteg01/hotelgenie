@@ -144,6 +144,12 @@ function renderHotels(container, hotels) {
       links.appendChild(src);
     }
     node.querySelector(".hotel__desc").after(links);
+    if (h.note) {
+      const nt = document.createElement("div");
+      nt.className = "hotel__note";
+      nt.textContent = "≈ Близкий вариант: " + h.note;
+      node.querySelector(".hotel__desc").after(nt);
+    }
     node.querySelector(".hotel__name").textContent = h.name;
     node.querySelector(".hotel__stars").textContent = "★".repeat(h.stars);
     node.querySelector(".hotel__city").textContent =

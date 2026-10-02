@@ -15,7 +15,7 @@ from .config import config
 from .database import init_db
 from .hotels_data import HOTELS
 
-SEED_VERSION = "2"
+SEED_VERSION = "3"
 
 
 async def seed() -> None:
